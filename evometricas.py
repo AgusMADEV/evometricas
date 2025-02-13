@@ -1,135 +1,140 @@
-
 import matplotlib.pyplot as plt
 import psutil
 import time
 import subprocess
+import os
+from datetime import datetime, timedelta
 
-# Obtener métricas del sistema
-carga_cpu = psutil.cpu_percent(interval=1)
-carga_ram = psutil.virtual_memory().percent
-uso_disco = psutil.disk_usage('/').percent
+# Path for hourly data file
+data_paths = {
+    "hourly": "/var/www/html/evometricas/carga_hourly.txt",
+}
 
-# Medir el uso de red en un intervalo corto
-data_inicio = psutil.net_io_counters()
-time.sleep(1)  # Intervalo de medición
-data_final = psutil.net_io_counters()
+# Path for plot folder
+plot_folders = {
+    "hourly": "/var/www/html/evometricas/img/hourly",
+}
 
-descarga_mbps = (data_final.bytes_recv - data_inicio.bytes_recv) / (1024 * 1024)
-subida_mbps = (data_final.bytes_sent - data_inicio.bytes_sent) / (1024 * 1024)
+# Create the plot folder if it doesn't exist
+for folder in plot_folders.values():
+    os.makedirs(folder, exist_ok=True)
 
-# Obtener la temperatura (requiere lm-sensors instalado)
-def obtener_temperaturas():
+# Function to trim data based on a time window
+def trim_data(data, time_window_seconds):
+    now = datetime.now()
+    return [entry for entry in data if (now - entry[0]).total_seconds() <= time_window_seconds]
+
+# Load existing data
+def load_data(file_path):
     try:
-        sensores = subprocess.check_output(['sensors'], encoding='utf-8')
-        for linea in sensores.splitlines():
-            if 'Core' in linea:  # Filtrar para núcleos de CPU
-                temp = float(linea.split()[1].strip('+').strip('°C'))
-                yield temp
-    except Exception as e:
-        print(f"Error al obtener temperaturas: {e}")
+        with open(file_path, 'r') as f:
+            return [
+                (datetime.fromisoformat(row[0]), *map(float, row[1:]))
+                for row in (line.strip().split(',') for line in f if line.strip())
+            ]
+    except FileNotFoundError:
         return []
 
-temperaturas = list(obtener_temperaturas())
-if not temperaturas:
-    temperaturas = [0]  # Valor por defecto si no se puede medir
+# Save data to file
+def save_data(file_path, data):
+    with open(file_path, 'w') as f:
+        for row in data:
+            f.write(','.join(map(str, [row[0].isoformat()] + list(row[1:]))) + '\n')
 
-temperatura_promedio = sum(temperaturas) / len(temperaturas)
+# Measure system metrics
+def measure_metrics():
+    carga_cpu = psutil.cpu_percent(interval=1)
+    carga_ram = psutil.virtual_memory().percent
+    uso_disco = psutil.disk_usage('/').percent
+    data_inicio = psutil.net_io_counters()
+    time.sleep(1)
+    data_final = psutil.net_io_counters()
+    descarga_mbps = (data_final.bytes_recv - data_inicio.bytes_recv) / (1024 * 1024)
+    subida_mbps = (data_final.bytes_sent - data_inicio.bytes_sent) / (1024 * 1024)
+    num_conexiones = len(psutil.net_connections())
+    temperaturas = list(obtener_temperaturas())
+    temperatura_promedio = sum(temperaturas) / len(temperaturas) if temperaturas else 0
+    return (
+        datetime.now(),
+        carga_cpu,
+        carga_ram,
+        uso_disco,
+        descarga_mbps,
+        subida_mbps,
+        temperatura_promedio,
+        num_conexiones,
+    )
 
-# Obtener el número de conexiones activas
-num_conexiones = len(psutil.net_connections())
+# Function to obtain CPU temperatures (requires lm-sensors)
+def obtener_temperaturas():
+    # Uncomment and implement if lm-sensors is available
+    # try:
+    #     sensores = subprocess.check_output(['sensors'], encoding='utf-8')
+    #     for linea in sensores.splitlines():
+    #         if 'Core' in linea:
+    #             yield float(linea.split()[1].strip('+').strip('°C'))
+    # except Exception as e:
+    #     print(f"Error al obtener temperaturas: {e}")
+    #     return []
+    return []
 
-# Guardar las métricas en un archivo
-ruta_archivo = "/var/www/html/evometricas/carga6.txt"
-with open(ruta_archivo, 'a') as archivo:
-    archivo.write(f"{carga_cpu},{carga_ram},{uso_disco},{descarga_mbps},{subida_mbps},{temperatura_promedio},{num_conexiones}\n")
+# Load current data
+data_buffers = {key: load_data(path) for key, path in data_paths.items()}
 
-# Leer y procesar el archivo para las gráficas
-with open(ruta_archivo, 'r') as archivo:
-    lineas = archivo.readlines()
+# Measure metrics
+new_entry = measure_metrics()
 
-datos_cpu, datos_ram, datos_disco = [], [], []
-datos_descarga, datos_subida = [], []
-datos_temperatura, datos_conexiones = [], []
-for linea in lineas:
-    linea = linea.strip()
-    if linea:
-        cpu, ram, disco, descarga, subida, temp, conexiones = map(float, linea.split(','))
-        datos_cpu.append(cpu)
-        datos_ram.append(ram)
-        datos_disco.append(disco)
-        datos_descarga.append(descarga)
-        datos_subida.append(subida)
-        datos_temperatura.append(temp)
-        datos_conexiones.append(conexiones)
+# Update data buffer
+data_buffers["hourly"].append(new_entry)
 
-# Generar y guardar gráfica de CPU
-plt.figure(figsize=(10, 6))
-plt.plot(datos_cpu, label='CPU', marker='o', color='blue')
-plt.grid(True)
-plt.ylim(0, 100)
-plt.title('Uso de CPU')
-plt.xlabel('Muestras')
-plt.ylabel('Porcentaje de Uso')
-plt.legend()
-plt.savefig("/var/www/html/evometricas/carga_cpu.jpg")
-plt.close()
+# Trim data to the last 1 hour (3600 seconds)
+data_buffers["hourly"] = trim_data(data_buffers["hourly"], 3600)  # Last 1 hour
 
-# Generar y guardar gráfica de RAM
-plt.figure(figsize=(10, 6))
-plt.plot(datos_ram, label='RAM', marker='s', color='green')
-plt.grid(True)
-plt.ylim(0, 100)
-plt.title('Uso de RAM')
-plt.xlabel('Muestras')
-plt.ylabel('Porcentaje de Uso')
-plt.legend()
-plt.savefig("/var/www/html/evometricas/carga_ram.jpg")
-plt.close()
+# Save updated data
+for key, path in data_paths.items():
+    save_data(path, data_buffers[key])
 
-# Generar y guardar gráfica de Disco
-plt.figure(figsize=(10, 6))
-plt.plot(datos_disco, label='Disco', marker='^', color='red')
-plt.grid(True)
-plt.ylim(0, 100)
-plt.title('Uso de Disco')
-plt.xlabel('Muestras')
-plt.ylabel('Porcentaje de Uso')
-plt.legend()
-plt.savefig("/var/www/html/evometricas/carga_disco.jpg")
-plt.close()
+# Function to generate plots
+def generate_plot(data, index, title, ylabel, save_path, ylim=None):
+    if not data:
+        print(f"No data available for {title}. Skipping plot.")
+        return
+    timestamps = [row[0] for row in data]
+    values = [row[index] for row in data]
+    plt.figure(figsize=(10, 6))
+    plt.plot(timestamps, values, label=title, marker='o')
+    plt.grid(True)
+    if ylim:
+        plt.ylim(ylim)
+    plt.title(title)
+    plt.xlabel('Tiempo')
+    plt.ylabel(ylabel)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(save_path)
+    plt.close()
 
-# Generar y guardar gráfica de Uso de Red
-plt.figure(figsize=(10, 6))
-plt.plot(datos_descarga, label='Descarga (Mbps)', marker='o', color='purple')
-plt.plot(datos_subida, label='Subida (Mbps)', marker='x', color='orange')
-plt.grid(True)
-plt.title('Uso de Red')
-plt.xlabel('Muestras')
-plt.ylabel('Velocidad (Mbps)')
-plt.legend()
-plt.savefig("/var/www/html/evometricas/carga_red.jpg")
-plt.close()
+# Plot settings
+plot_configs = [
+    (1, 'Uso de CPU', 'Porcentaje de Uso', (0, 100)),
+    (2, 'Uso de RAM', 'Porcentaje de Uso', (0, 100)),
+    (3, 'Uso de Disco', 'Porcentaje de Uso', (0, 100)),
+    (4, 'Descarga', 'Mbps', None),
+    (5, 'Subida', 'Mbps', None),
+    (6, 'Temperatura', 'Temperatura (°C)', None),
+    (7, 'Conexiones Activas', 'Conexiones', None),
+]
 
-# Generar y guardar gráfica de Temperatura
-plt.figure(figsize=(10, 6))
-plt.plot(datos_temperatura, label='Temperatura (°C)', marker='*', color='cyan')
-plt.grid(True)
-plt.title('Temperatura de los Componentes')
-plt.xlabel('Muestras')
-plt.ylabel('Temperatura (°C)')
-plt.legend()
-plt.savefig("/var/www/html/evometricas/carga_temperatura.jpg")
-plt.close()
+# Generate plots for hourly data
+for index, title, ylabel, ylim in plot_configs:
+    generate_plot(
+        data_buffers["hourly"],
+        index,
+        f'{title} (Hourly)',
+        ylabel,
+        os.path.join(plot_folders["hourly"], f'{title.lower().replace(" ", "_")}_hourly.jpg'),
+        ylim,
+    )
 
-# Generar y guardar gráfica de Número de Conexiones
-plt.figure(figsize=(10, 6))
-plt.plot(datos_conexiones, label='Conexiones Activas', marker='d', color='magenta')
-plt.grid(True)
-plt.title('Número de Conexiones Activas')
-plt.xlabel('Muestras')
-plt.ylabel('Conexiones')
-plt.legend()
-plt.savefig("/var/www/html/evometricas/carga_conexiones.jpg")
-plt.close()
+print("Métricas actualizadas y gráficas generadas correctamente.")
 
-print("Métricas guardadas y gráficas generadas correctamente.")
