@@ -82,7 +82,7 @@ $images = $loggedIn ? getImages($chartFolders[$selectedType]) : [];
 
         /* Header Styles */
         .header {
-            background-color: tomato;
+            background-color: LightCoral;
             width: 100%;
             padding: 15px 30px;
             color: white;
@@ -110,7 +110,7 @@ $images = $loggedIn ? getImages($chartFolders[$selectedType]) : [];
         	margin-right:20px;
         }
         .header .logout-button {
-            background-color: tomato;
+            background-color: LightCoral;
             color: white;
             border: 2px solid white;
             padding: 8px 16px;
@@ -139,20 +139,20 @@ $images = $loggedIn ? getImages($chartFolders[$selectedType]) : [];
         }
         .sidebar h3 {
             margin-bottom: 20px;
-            color: tomato;
+            color: LightCoral;
             font-size: 1.2rem;
         }
         .sidebar a {
             display: block;
             padding: 12px 16px;
             margin: 8px 0;
-            color: tomato;
+            color: LightCoral;
             text-decoration: none;
             border-radius: 8px;
             transition: background-color 0.3s, color 0.3s;
         }
         .sidebar a:hover, .sidebar a.active {
-            background-color: tomato;
+            background-color: LightCoral;
             color: white;
         }
 
@@ -249,7 +249,7 @@ $images = $loggedIn ? getImages($chartFolders[$selectedType]) : [];
         }
         .login-container h2 {
             margin-bottom: 20px;
-            color: tomato;
+            color: LightCoral;
             font-size: 1.8rem;
         }
         .login-container .error {
@@ -277,13 +277,13 @@ $images = $loggedIn ? getImages($chartFolders[$selectedType]) : [];
             transition: border-color 0.3s;
         }
         .login-container input:focus {
-            border-color: tomato;
+            border-color: LightCoral;
             outline: none;
         }
         .login-container button {
             width: 100%;
             padding: 12px;
-            background-color: tomato;
+            background-color: LightCoral;
             border: none;
             color: white;
             font-size: 1rem;
