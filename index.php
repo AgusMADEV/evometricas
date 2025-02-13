@@ -121,8 +121,8 @@ $images = $loggedIn ? getImages($chartFolders[$selectedType]) : [];
             transition: background-color 0.3s, border-color 0.3s;
         }
         .header .logout-button:hover {
-            background-color: darkred;
-            border-color: darkred;
+            background-color:rgb(212, 100, 100);
+            border-color: lightcoral;
         }
 
         /* Sidebar Styles */
@@ -292,7 +292,7 @@ $images = $loggedIn ? getImages($chartFolders[$selectedType]) : [];
             transition: background-color 0.3s;
         }
         .login-container button:hover {
-            background-color: darkred;
+            background-color: rgb(212, 100, 100);
         }
 
         /* Responsive Adjustments */
