@@ -13,19 +13,19 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #121212;
+            background-color: #f8f8f8;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            color: #fff;
+            color: #0f0f0f;
         }
 
         .dashboard-title {
             font-size: 2.5rem;
             font-weight: bold;
-            color: #ff6f61;
+            color: lightpink;
             margin-bottom: 30px;
             text-transform: uppercase;
         }
@@ -40,25 +40,32 @@
 
         .panel {
             text-align: center;
-            background: #1e1e1e;
+            background: #f0eeef;
             padding: 25px;
             border-radius: 12px;
-            box-shadow: 0 6px 12px rgba(255, 111, 97, 0.2);
-            border: 2px solid #ff6f61;
+            box-shadow: 0 6px 12px rgba(255, 97, 144, 0.3);
+            border: 2px solid lightpink;
             cursor: pointer;
-            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, background 0.3s ease-in-out;
         }
 
         .panel:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(255, 111, 97, 0.3);
+            box-shadow: 0 8px 16px rgba(255, 97, 144, 0.3);
+            background: lightpink;
+            color: #e7e7e7;
         }
 
         .title {
             font-size: 1.8rem;
             margin-bottom: 1.2rem;
-            color: #ff6f61;
+            color: lightpink;
             font-weight: 600;
+            transition: color 0.3s ease-in-out;
+        }
+
+        .panel:hover .title {
+            color: #e7e7e7;
         }
 
         .image {
@@ -66,6 +73,11 @@
             max-height: 220px;
             border-radius: 10px;
             box-shadow: 0 5px 10px rgba(255, 111, 97, 0.15);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .panel:hover .image {
+            transform: scale(1.05);
         }
 
         /* Modal Styles */
@@ -80,6 +92,13 @@
             background-color: rgba(0, 0, 0, 0.85);
             justify-content: center;
             align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .modal.show {
+            display: flex;
+            opacity: 1;
         }
 
         .modal-content {
@@ -87,6 +106,12 @@
             max-height: 85%;
             border-radius: 12px;
             box-shadow: 0 6px 12px rgba(255, 111, 97, 0.3);
+            transform: scale(0.8);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .modal.show .modal-content {
+            transform: scale(1);
         }
 
         .close {
@@ -141,11 +166,16 @@
     <script>
         function openModal(imageSrc) {
             document.getElementById('modal-image').src = imageSrc;
-            document.getElementById('modal').style.display = 'flex';
+            let modal = document.getElementById('modal');
+            modal.classList.add('show');
         }
 
         function closeModal() {
-            document.getElementById('modal').style.display = 'none';
+            let modal = document.getElementById('modal');
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
         }
     </script>
 </body>
