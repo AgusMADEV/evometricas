@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -45,6 +44,7 @@
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             border: 2px solid tomato;
+            cursor: pointer;
         }
 
         .title {
@@ -59,35 +59,80 @@
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            max-width: 80%;
+            max-height: 80%;
+            border-radius: 10px;
+        }
+
+        .close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 2rem;
+            color: white;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <h1 class="dashboard-title">Panel de Control del Servidor</h1>
     <div class="dashboard">
-        <div class="panel">
+        <div class="panel" onclick="openModal('carga_cpu.jpg')">
             <h1 class="title">CPU</h1>
             <img src="carga_cpu.jpg" alt="Gráfica de CPU" class="image">
         </div>
-        <div class="panel">
+        <div class="panel" onclick="openModal('carga_ram.jpg')">
             <h1 class="title">RAM</h1>
             <img src="carga_ram.jpg" alt="Gráfica de RAM" class="image">
         </div>
-        <div class="panel">
+        <div class="panel" onclick="openModal('carga_disco.jpg')">
             <h1 class="title">Disco</h1>
             <img src="carga_disco.jpg" alt="Gráfica de Disco" class="image">
         </div>
-        <div class="panel">
+        <div class="panel" onclick="openModal('carga_red.jpg')">
             <h1 class="title">Red</h1>
-            <img src="carga_red.jpg" alt="Gráfica de Disco" class="image">
+            <img src="carga_red.jpg" alt="Gráfica de Red" class="image">
         </div>
-        <div class="panel">
+        <div class="panel" onclick="openModal('carga_conexiones.jpg')">
             <h1 class="title">Conexiones</h1>
-            <img src="carga_conexiones.jpg" alt="Gráfica de Disco" class="image">
+            <img src="carga_conexiones.jpg" alt="Gráfica de Conexiones" class="image">
         </div>
-        <div class="panel">
+        <div class="panel" onclick="openModal('carga_temperatura.jpg')">
             <h1 class="title">Temperatura</h1>
-            <img src="carga_temperatura.jpg" alt="Gráfica de Disco" class="image">
+            <img src="carga_temperatura.jpg" alt="Gráfica de Temperatura" class="image">
         </div>
     </div>
+
+    <div id="modal" class="modal" onclick="closeModal()">
+        <span class="close">&times;</span>
+        <img class="modal-content" id="modal-image">
+    </div>
+
+    <script>
+        function openModal(imageSrc) {
+            document.getElementById('modal-image').src = imageSrc;
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+    </script>
 </body>
 </html>
