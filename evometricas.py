@@ -39,7 +39,7 @@ temperatura_promedio = sum(temperaturas) / len(temperaturas)
 num_conexiones = len(psutil.net_connections())
 
 # Guardar las métricas en un archivo
-ruta_archivo = "Tomato/carga6.txt"
+ruta_archivo = "/var/www/html/evometricas/carga6.txt"
 with open(ruta_archivo, 'a') as archivo:
     archivo.write(f"{carga_cpu},{carga_ram},{uso_disco},{descarga_mbps},{subida_mbps},{temperatura_promedio},{num_conexiones}\n")
 
@@ -71,7 +71,7 @@ plt.title('Uso de CPU')
 plt.xlabel('Muestras')
 plt.ylabel('Porcentaje de Uso')
 plt.legend()
-plt.savefig("Tomato/carga_cpu.jpg")
+plt.savefig("/var/www/html/evometricas/carga_cpu.jpg")
 plt.close()
 
 # Generar y guardar gráfica de RAM
@@ -83,7 +83,7 @@ plt.title('Uso de RAM')
 plt.xlabel('Muestras')
 plt.ylabel('Porcentaje de Uso')
 plt.legend()
-plt.savefig("Tomato/carga_ram.jpg")
+plt.savefig("/var/www/html/evometricas/carga_ram.jpg")
 plt.close()
 
 # Generar y guardar gráfica de Disco
@@ -95,7 +95,7 @@ plt.title('Uso de Disco')
 plt.xlabel('Muestras')
 plt.ylabel('Porcentaje de Uso')
 plt.legend()
-plt.savefig("Tomato/carga_disco.jpg")
+plt.savefig("/var/www/html/evometricas/carga_disco.jpg")
 plt.close()
 
 # Generar y guardar gráfica de Uso de Red
@@ -107,7 +107,7 @@ plt.title('Uso de Red')
 plt.xlabel('Muestras')
 plt.ylabel('Velocidad (Mbps)')
 plt.legend()
-plt.savefig("Tomato/carga_red.jpg")
+plt.savefig("/var/www/html/evometricas/carga_red.jpg")
 plt.close()
 
 # Generar y guardar gráfica de Temperatura
@@ -118,7 +118,7 @@ plt.title('Temperatura de los Componentes')
 plt.xlabel('Muestras')
 plt.ylabel('Temperatura (°C)')
 plt.legend()
-plt.savefig("Tomato/carga_temperatura.jpg")
+plt.savefig("/var/www/html/evometricas/carga_temperatura.jpg")
 plt.close()
 
 # Generar y guardar gráfica de Número de Conexiones
@@ -129,7 +129,7 @@ plt.title('Número de Conexiones Activas')
 plt.xlabel('Muestras')
 plt.ylabel('Conexiones')
 plt.legend()
-plt.savefig("Tomato/carga_conexiones.jpg")
+plt.savefig("/var/www/html/evometricas/carga_conexiones.jpg")
 plt.close()
 
 print("Métricas guardadas y gráficas generadas correctamente.")
