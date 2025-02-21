@@ -9,21 +9,17 @@ from datetime import datetime, timedelta
 data_paths = {
     "hourly": "/var/www/html/evometricas/carga_hourly.txt",
 }
-
 # Path for plot folder
 plot_folders = {
     "hourly": "/var/www/html/evometricas/img/hourly",
 }
-
 # Create the plot folder if it doesn't exist
 for folder in plot_folders.values():
     os.makedirs(folder, exist_ok=True)
-
 # Function to trim data based on a time window
 def trim_data(data, time_window_seconds):
     now = datetime.now()
     return [entry for entry in data if (now - entry[0]).total_seconds() <= time_window_seconds]
-
 # Load existing data
 def load_data(file_path):
     try:
@@ -34,13 +30,11 @@ def load_data(file_path):
             ]
     except FileNotFoundError:
         return []
-
 # Save data to file
 def save_data(file_path, data):
     with open(file_path, 'w') as f:
         for row in data:
             f.write(','.join(map(str, [row[0].isoformat()] + list(row[1:]))) + '\n')
-
 # Measure system metrics
 def measure_metrics():
     carga_cpu = psutil.cpu_percent(interval=1)
@@ -64,7 +58,6 @@ def measure_metrics():
         temperatura_promedio,
         num_conexiones,
     )
-
 # Function to obtain CPU temperatures (requires lm-sensors)
 def obtener_temperaturas():
     # Uncomment and implement if lm-sensors is available
@@ -77,23 +70,17 @@ def obtener_temperaturas():
     #     print(f"Error al obtener temperaturas: {e}")
     #     return []
     return []
-
 # Load current data
 data_buffers = {key: load_data(path) for key, path in data_paths.items()}
-
 # Measure metrics
 new_entry = measure_metrics()
-
 # Update data buffer
 data_buffers["hourly"].append(new_entry)
-
 # Trim data to the last 1 hour (3600 seconds)
 data_buffers["hourly"] = trim_data(data_buffers["hourly"], 3600)  # Last 1 hour
-
 # Save updated data
 for key, path in data_paths.items():
     save_data(path, data_buffers[key])
-
 # Function to generate plots
 def generate_plot(data, index, title, ylabel, save_path, ylim=None):
     if not data:
@@ -113,7 +100,6 @@ def generate_plot(data, index, title, ylabel, save_path, ylim=None):
     plt.tight_layout()
     plt.savefig(save_path)
     plt.close()
-
 # Plot settings
 plot_configs = [
     (1, 'Uso de CPU', 'Porcentaje de Uso', (0, 100)),
@@ -124,7 +110,6 @@ plot_configs = [
     (6, 'Temperatura', 'Temperatura (°C)', None),
     (7, 'Conexiones Activas', 'Conexiones', None),
 ]
-
 # Generate plots for hourly data
 for index, title, ylabel, ylim in plot_configs:
     generate_plot(
@@ -135,6 +120,5 @@ for index, title, ylabel, ylim in plot_configs:
         os.path.join(plot_folders["hourly"], f'{title.lower().replace(" ", "_")}_hourly.jpg'),
         ylim,
     )
-
 print("Métricas actualizadas y gráficas generadas correctamente.")
 
