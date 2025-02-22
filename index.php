@@ -63,7 +63,7 @@ $images = $loggedIn ? getImages($chartFolders[$selectedType]) : [];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EVOmetricas</title>
-    <link rel="icon" href="logo.png" type="image/svg+xml">
+    <link rel="icon" type="image/svg+xml" href="https://evo-luciona.es/static/logo/evometricas.svg"/>
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
 
@@ -244,7 +244,7 @@ $images = $loggedIn ? getImages($chartFolders[$selectedType]) : [];
             position: relative;
         }
         .login-container .logo {
-            width: 100px;
+            width: 50%;
             margin-bottom: 20px;
         }
         .login-container h2 {
@@ -325,7 +325,7 @@ $images = $loggedIn ? getImages($chartFolders[$selectedType]) : [];
     <?php if ($loggedIn): ?>
         <!-- Header -->
         <div class="header">
-            <div class="app-name"><img src="logo.png">EVOmetricas</div>
+            <div class="app-name"><img src="https://evo-luciona.es/static/logo/evometricas.svg" alt="Logo">EVOmetricas</div>
             <a href="index.php?action=logout" class="logout-button">Cerrar Sesión</a>
         </div>
 
@@ -381,7 +381,7 @@ $images = $loggedIn ? getImages($chartFolders[$selectedType]) : [];
         </script>
     <?php else: ?>
         <div class="login-container">
-            <img src="logo.png" alt="EVOmetricas Logo" class="logo">
+            <img class="logo" src="https://evo-luciona.es/static/logo/evometricas.svg" alt="Logo">
             <h2>Iniciar Sesión</h2>
             <?php if (isset($error)): ?>
                 <div class="error"><?php echo htmlspecialchars($error); ?></div>
