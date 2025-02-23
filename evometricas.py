@@ -1,42 +1,43 @@
+"""
+Este programa monitoriza métricas del sistema, como uso de CPU, RAM, disco, velocidad de red y temperatura,
+almacenando los datos cada hora en un archivo y generando gráficos de las métricas registradas.
+"""
 import matplotlib.pyplot as plt
 import psutil
 import time
 import subprocess
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 
-# Path for hourly data file
-data_paths = {
-    "hourly": "/var/www/html/evometricas/carga_hourly.txt",
-}
-# Path for plot folder
-plot_folders = {
-    "hourly": "/var/www/html/evometricas/img/hourly",
-}
-# Create the plot folder if it doesn't exist
+# Definir las rutas de los archivos de datos y las carpetas para los gráficos
+data_paths = {"hourly": "/var/www/html/evometricas/carga_hourly.txt"}
+plot_folders = {"hourly": "/var/www/html/evometricas/img/hourly"}
+
+# Crear las carpetas para los gráficos si no existen
 for folder in plot_folders.values():
     os.makedirs(folder, exist_ok=True)
-# Function to trim data based on a time window
+
 def trim_data(data, time_window_seconds):
+    # Elimina datos fuera de la ventana de tiempo especificada
     now = datetime.now()
     return [entry for entry in data if (now - entry[0]).total_seconds() <= time_window_seconds]
-# Load existing data
+
 def load_data(file_path):
+    # Carga datos desde un archivo de texto y los convierte a formato adecuado
     try:
         with open(file_path, 'r') as f:
-            return [
-                (datetime.fromisoformat(row[0]), *map(float, row[1:]))
-                for row in (line.strip().split(',') for line in f if line.strip())
-            ]
+            return [(datetime.fromisoformat(row[0]), *map(float, row[1:])) for row in (line.strip().split(',') for line in f if line.strip())]
     except FileNotFoundError:
         return []
-# Save data to file
+
 def save_data(file_path, data):
+    # Guarda los datos en un archivo de texto en formato CSV
     with open(file_path, 'w') as f:
         for row in data:
             f.write(','.join(map(str, [row[0].isoformat()] + list(row[1:]))) + '\n')
-# Measure system metrics
+
 def measure_metrics():
+    # Obtiene métricas del sistema como uso de CPU, RAM, disco, red y temperatura
     carga_cpu = psutil.cpu_percent(interval=1)
     carga_ram = psutil.virtual_memory().percent
     uso_disco = psutil.disk_usage('/').percent
@@ -48,41 +49,27 @@ def measure_metrics():
     num_conexiones = len(psutil.net_connections())
     temperaturas = list(obtener_temperaturas())
     temperatura_promedio = sum(temperaturas) / len(temperaturas) if temperaturas else 0
-    return (
-        datetime.now(),
-        carga_cpu,
-        carga_ram,
-        uso_disco,
-        descarga_mbps,
-        subida_mbps,
-        temperatura_promedio,
-        num_conexiones,
-    )
-# Function to obtain CPU temperatures (requires lm-sensors)
+    return datetime.now(), carga_cpu, carga_ram, uso_disco, descarga_mbps, subida_mbps, temperatura_promedio, num_conexiones
+
 def obtener_temperaturas():
-    # Uncomment and implement if lm-sensors is available
-    # try:
-    #     sensores = subprocess.check_output(['sensors'], encoding='utf-8')
-    #     for linea in sensores.splitlines():
-    #         if 'Core' in linea:
-    #             yield float(linea.split()[1].strip('+').strip('°C'))
-    # except Exception as e:
-    #     print(f"Error al obtener temperaturas: {e}")
-    #     return []
+    # Obtiene temperaturas de la CPU si lm-sensors está disponible
     return []
-# Load current data
+
+# Cargar datos previos
 data_buffers = {key: load_data(path) for key, path in data_paths.items()}
-# Measure metrics
-new_entry = measure_metrics()
-# Update data buffer
-data_buffers["hourly"].append(new_entry)
-# Trim data to the last 1 hour (3600 seconds)
-data_buffers["hourly"] = trim_data(data_buffers["hourly"], 3600)  # Last 1 hour
-# Save updated data
+
+# Medir nuevas métricas y agregarlas a los datos
+data_buffers["hourly"].append(measure_metrics())
+
+# Eliminar datos más antiguos de una hora
+data_buffers["hourly"] = trim_data(data_buffers["hourly"], 3600)
+
+# Guardar los datos actualizados en los archivos
 for key, path in data_paths.items():
     save_data(path, data_buffers[key])
-# Function to generate plots
+
 def generate_plot(data, index, title, ylabel, save_path, ylim=None):
+    # Genera gráficos de las métricas y los guarda como imágenes
     if not data:
         print(f"No data available for {title}. Skipping plot.")
         return
@@ -100,7 +87,8 @@ def generate_plot(data, index, title, ylabel, save_path, ylim=None):
     plt.tight_layout()
     plt.savefig(save_path)
     plt.close()
-# Plot settings
+
+# Configuración de los gráficos a generar
 plot_configs = [
     (1, 'Uso de CPU', 'Porcentaje de Uso', (0, 100)),
     (2, 'Uso de RAM', 'Porcentaje de Uso', (0, 100)),
@@ -110,15 +98,11 @@ plot_configs = [
     (6, 'Temperatura', 'Temperatura (°C)', None),
     (7, 'Conexiones Activas', 'Conexiones', None),
 ]
-# Generate plots for hourly data
+
+# Generar gráficos y guardarlos en las carpetas correspondientes
 for index, title, ylabel, ylim in plot_configs:
     generate_plot(
-        data_buffers["hourly"],
-        index,
-        f'{title} (Hourly)',
-        ylabel,
-        os.path.join(plot_folders["hourly"], f'{title.lower().replace(" ", "_")}_hourly.jpg'),
-        ylim,
-    )
-print("Métricas actualizadas y gráficas generadas correctamente.")
+        data_buffers["hourly"], index, f'{title} (Hourly)', ylabel,
+        os.path.join(plot_folders["hourly"], f'{title.lower().replace(" ", "_")}_hourly.jpg'), ylim)
 
+print("Métricas actualizadas y gráficas generadas correctamente.")
